@@ -1,4 +1,4 @@
-# Software Engineering Project a.y. 2023/2024
+# Software Engineering Project
 
 ![Logo](./backend_logo.png)
 
