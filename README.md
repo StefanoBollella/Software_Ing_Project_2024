@@ -1,5 +1,8 @@
 # Software_Ing_Project_2024
-![Logo](./backend_logo.png)
+<div align="center">
+  ![Logo](./backend_logo.png)
+</div>
+
 
 Project for the software engineering class of the third year of "informatica" degree at the Sapienza university in Rome, a.y. 2023/2024. 
 The chosen project is a simulator of a backend of an e-commerce site.
