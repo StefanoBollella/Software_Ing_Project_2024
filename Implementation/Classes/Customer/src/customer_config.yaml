@@ -1,0 +1,90 @@
+---
+# NOTE: All values must be non-negative integers and if there are duplicated keys
+# the value parsed is the one at the top. All the key: value pairs must be at the
+# same indentation level max number of orders that a customer can have at a time
+
+# Represents the number of orders a customer can make in
+# a single session/access to the e-commerce site. Can be
+# thought of as the number of Shopping carts worth of order
+# made by a single customer.
+#
+# If ORDER_LIMIT = 0 is the same as ORDER_LIMIT = ULONG_MAX.
+ORDER_LIMIT: 50
+
+# Max distinct products order/shopping cart.
+# MAX_PRODUCTS is an integer in the range [1, 100].
+MAX_PRODUCTS: 20
+
+# Max number of new products that can be added
+# for every request to the customer server.
+#
+# This represents the number of new products shown
+# to a user when scrolling down the e-commerce site
+# or when refreshing the page.
+#
+# RESTOCK_QTY is an integer in range [0, 15].
+RESTOCK_QTY: 5
+
+# Max number of customers at a time.
+#
+# NOTE: The actual number of customers
+# at a time is a bit over MAX_CUST_QTY.
+#
+# MAX_CUST_QTY is an integer in the range [0, 10^6].
+# MAX_CUST_QTY = 0 is the same as MAX_CUST_QTY = 10^6.
+MAX_CUST_QTY: 100
+
+# Number of cycles done before every generation of new customers.
+#
+# This represents how fast new customer arrives (so a moment
+# where an e-commerce site is particularly busy, e.g. during
+# sales or Xmas days where there is a lot of user traffic).
+#
+# CYCLE_CUST_GEN_RATIO is an integer in the range [100, +inf).
+CYCLE_CUST_GEN_RATIO: 100
+
+# Number of customers generated initially.
+# NOTE: INIT_CUST_BASE <= MAX_CUST_QTY must be true
+INIT_CUST_BASE: 50
+
+# Number of cycles done before every generation of new products.
+#
+# This represents the appearance of new products or
+# resupplying of product quantities on the
+# product windows of the e-commerce.
+# Such as when refreshing the site or scrolling down.
+#
+# CYCLE_PROD_GEN_RATIO is an integer in the range [100, +inf).
+CYCLE_PROD_GEN_RATIO: 100
+
+##################### PROBABILITY PARAMETERS ##################################
+
+# NOTE: the probability interval below must be satisfied.
+# 0 < CANCEL_PROB < LOGOUT_PROB < SHOPPING_PROB < 100
+# CANCELLING if in [0, CANCEL_PROB]
+# LOGOUT if in (CANCEL_PROB, LOGOUT_PROB]
+# SHOPPING if in (LOGOUT_PROB, SHOPPING_PROB]
+# IDLE if in (SHOPPING_PROB, 100)
+
+# set CANCEL_PROB = 0 to prevent cancelling orders.
+# set SHOPPING_PROB = 100 to prevent a customer of being idle.
+# For every value below add 1 then divide it by 100 to obtain there
+# actual probability.
+# Example: The cancellation probability is given by: CANCEL_PROB / 100
+
+# order cancellation subinterval upper bound
+# integer in the range (0, LOGOUT_PROB)
+CANCEL_PROB: 50
+
+# customer logout subinterval upper bound
+# integer in the range (CANCEL_PROB, SHOPPING_PROB)
+LOGOUT_PROB: 51
+
+# shopping subinterval upper bound
+# integer in the range (LOGOUT_PROB, 100)
+SHOPPING_PROB: 80
+
+
+###############################################################################
+
+...

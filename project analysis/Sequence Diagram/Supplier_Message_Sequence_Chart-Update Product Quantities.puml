@@ -1,0 +1,52 @@
+title Supplier Message Sequence Chart
+
+participant "Supplier" as sp #lightyellow
+participant "Supplier server" as ss #gold
+database "e-commerce-db" as db #lightblue
+database "logdb" as logdb #lightblue
+
+note over sp #lightgrey: Iteration begins
+
+
+alt Supplier queue is not empty
+    activate sp
+    note over sp #lightgrey: Process current supplier
+    sp->sp: currentSupplier = supplierQueue.front()
+ 
+    alt Supplier updates product quantities
+        activate sp
+        sp->ss: redis request: findProductsQuantity()
+        activate ss
+        ss->db: Retrieve product IDs
+        activate db
+        db-->ss: Product IDs (Success) / Failure
+        deactivate db
+        ss-->sp: Product IDs (Success) / Failure
+        deactivate ss
+        alt Retrieval Success
+            sp->ss: redis request: updateProductQuantities()
+            activate ss
+            ss->db: Update quantities
+            activate db
+            db-->ss: Success / Failure
+            deactivate db
+            ss-->sp: Success / Failure
+            activate logdb
+            ss->logdb: Log quantity update event
+            deactivate logdb
+            deactivate ss
+        else Retrieval Failed
+            sp->sp: Skip the update operation by moving to the next iteration
+        end
+     deactivate sp
+    end
+else Supplier queue is empty
+    note over sp #lightgrey: No operation possible, wait for next iteration
+else Server Timeout
+    activate sp
+    sp->sp: Handle timeout
+    sp->sp: Delete streams
+    sp->sp: Enter wait mode
+    note over sp #lightgrey: Resume operation when redis streams are recreated by the Supplier server
+    deactivate sp
+end

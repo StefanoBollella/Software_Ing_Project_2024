@@ -1,0 +1,75 @@
+title Redis Communication
+
+participant "Server" as comp #lightyellow
+participant "Redis" as redis #orange
+participant "Monitor" as srv #gold
+
+== Initialization Phase ==
+note over srv, redis #lightgrey: Server initializes Redis
+activate srv
+srv->redis: Create streams (pong_server, ping_server)
+activate redis
+redis-->srv: Confirmation: Streams created
+deactivate redis
+
+srv->redis: Create consumer group for pong_server
+activate redis
+redis-->srv: Confirmation: Consumer group for pong_server created
+deactivate redis
+
+srv->redis: Create consumer group for ping_server
+activate redis
+redis-->srv: Confirmation: Consumer group for ping_server created
+deactivate redis
+
+
+note over srv #lightgrey: The monitor sends a ping to the server
+
+srv->redis:XADD ping_server (Type: PING)
+deactivate srv
+activate redis
+note over redis, srv #lightgrey: The monitor is ready to process the response
+deactivate redis
+
+note over comp, redis #lightgrey: Component connects to Redis
+activate comp
+comp->redis: Connect to Redis
+activate redis
+redis-->comp: Connection confirmed
+deactivate redis
+deactivate comp
+
+== Communication Phase ==
+note over comp, redis #lightgrey: The server reads the PING from the monitor
+activate comp
+comp->redis: XREADGROUP ping_server
+activate redis
+note over redis #lightgrey: Request stored in Redis
+redis-->comp: Deliver PING to server
+deactivate redis
+
+note over comp #lightgrey: The server sends a PONG to the monitor
+
+comp->redis:XADD pong_server (Type: PONG)
+deactivate comp
+
+note over srv, redis #lightgrey: The monitor reads the PONG sent by the server
+activate srv
+srv->redis: XREADGROUP pong_stream
+activate redis
+redis-->srv: Deliver PONG to server
+deactivate redis
+
+
+deactivate srv
+
+== Error Handling ==
+alt Redis connection error
+    note over comp, redis, srv #lightgrey: Retry connection or log error
+    activate comp
+    comp->comp: Retry Redis connection
+    deactivate comp
+    activate srv
+    srv->srv: Retry Redis connection
+    deactivate srv
+end

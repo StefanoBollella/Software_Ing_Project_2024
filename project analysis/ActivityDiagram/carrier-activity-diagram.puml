@@ -1,0 +1,72 @@
+@startuml
+start
+fork
+if (read parameters\nfrom .yaml file) then
+  #palegreen:save values;
+else
+  #pink:error;
+  end
+endif
+fork again
+if (connect to redis) then
+  #palegreen:initialize queue;
+else
+  #pink:error;
+  end
+endif
+endfork
+
+
+while (always)
+    if (the redis streams exist) then (yes)
+      if (generate new carriers?) then (yes)
+        :generate carriers;
+        :push new carriers\nin queue;
+      else (no)
+        :Carrier=carrierQueue.top();;
+
+
+        switch (Carrier.getState();)
+
+
+          case (**Delivering**)
+            :roll chance for\n-delivering,\n-losing,\n-do nothing;
+            if(Carrier.doOperation(-);) then
+            else (error)
+             #pink:handle error;
+            endif
+
+
+
+          case(**Ready**)
+            if (Carrier.getOrders();) then
+              if (order queue is \nstill empty) then (yes)
+                :Carrier.goWaiting();;
+              else (no)
+                :Carrier.goDelivering();;
+              endif
+            else (error)
+             #pink:handle error;
+            endif
+
+          case(**Waiting**)
+            :generate random \nvalue V ∈ [0;100];
+            if (V < P_END_WAIT) then (yes)
+              :Carrier.goReady();;
+            else (no)
+              :increase modifier;
+            endif
+        endswitch
+        :carrierQueue.pop();;
+        :carrierQueue.push(Carrier);;
+      endif
+    else (no)
+      #pink:report status;
+    endif
+  backward:sleep;
+
+endwhile (**SIGINT**) 
+floating note left:**SIGINT** can happen\nat any step of while
+:report data;
+stop
+@enduml

@@ -1,0 +1,9 @@
+The program will continuosly query the log DB to check for orders that took more than x nanoseconds.
+
+If there is at least one order that took more than x nanoseconds then prints an alert into stdout.
+Else continue
+
+How can I avoid rereading logs?
+1. Read only those logs that were done after the last read time.
+    -- save the last read time
+    -- read the logs that were created after the last read time

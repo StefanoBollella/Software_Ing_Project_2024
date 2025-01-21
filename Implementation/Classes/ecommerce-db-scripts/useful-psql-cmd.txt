@@ -1,0 +1,17 @@
+To connect to psql as postgres:
+sudo -u postgres psql postgres
+
+To connect to a DB:
+\c <db_name>
+
+To show all db:
+\l
+
+To show all tables of the current db:
+\dt
+
+To drop a database:
+drop database logdb_trafficlight;
+
+To delete all rows of a database:
+delete from <table_name>

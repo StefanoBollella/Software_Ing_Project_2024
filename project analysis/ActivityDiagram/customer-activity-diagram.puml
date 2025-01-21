@@ -1,0 +1,77 @@
+@startuml
+!theme vibrant
+start
+partition Init {
+:Load Configuration Parameters;
+:Init Redis Streams;
+:Init Time Measurement;
+}
+repeat
+
+    if (Redis Streams Exist?) then (yes)
+    partition Customer Resources {
+        :Generate Customers;
+        :Register Customers;
+        :Init Product Window;
+    }
+    else (no)
+        :Wait Redis Streams From Server;
+        #yellow:(L)
+        detach
+    endif
+
+    partition Customer Simulation {
+    :Pick Customer Randomly;
+
+    switch (Customer State?)
+        case (IDLE)
+            :Update State;
+            
+
+        case (SHOPPING)
+
+            if (Order Limit Reached?) then (yes)
+                :Customer Logout;
+                #yellow:(L)
+                detach
+            else (no)
+                if (Product Window Empty?) then (yes)
+                    :Update Product Window;
+                endif
+
+                if (Product Window Empty?) then (yes)
+                    #yellow:(L)
+                    detach
+                else (no)
+                    :Pick Products From Product Window;
+
+                    if (Order Basket Not Empty?) then (yes)
+                        :Order;
+
+                        if (Order Success?) then (yes)
+                            :Update Product Window;
+                        endif
+                    endif
+                endif
+            endif
+            :Update State;
+            
+
+        case (CANCELLING)
+
+            if (Total Orders > 0?) then (yes)
+                :Cancel A Random Order;
+            endif
+
+            :Update State;
+            
+
+        case (TERMINATED)
+            :Remove Customer From Customer Pool;
+            
+    endswitch
+    }
+#yellow:(L)
+repeat while (true)
+
+@enduml

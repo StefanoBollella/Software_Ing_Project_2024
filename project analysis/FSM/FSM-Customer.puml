@@ -1,0 +1,24 @@
+@startuml
+!theme vibrant 
+state c1 <<choice>>
+state c2 <<choice>>
+state c3 <<choice>>
+
+[*] --> IDLE
+IDLE --> c1
+c1 --> CANCELLING : [0 <= v <= cancelProb]
+c1 --> TERMINATED : [cancelProb < v <= logoutProb]
+c1 --> SHOPPING : [logoutProb < v <= shoppingProb]
+c1 --> IDLE : [shoppingProb < v <= 100]
+
+SHOPPING --> c2
+c2 --> TERMINATED : [(cancelProb < v <= logoutProb) OR (getTotOrders >= orderLimit)]
+c2 --> CANCELLING : [0 <= v <= cancelProb]
+c2 --> SHOPPING : [logoutProb < v <= 100]
+
+CANCELLING --> c3
+c3 --> TERMINATED : [0 <= v <= logoutProb]
+c3 --> IDLE : [logoutProb < v <= 100]
+
+TERMINATED --> [*]
+@enduml

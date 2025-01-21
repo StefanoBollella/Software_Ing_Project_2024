@@ -1,0 +1,63 @@
+#title Carrier Message sequence Chart
+
+participant "Carrier-client" as cc
+participant "Carrier-server" as cs
+database "e-commerce-db" as ecdb
+database logdb
+
+note over ecdb,logdb: ./init-dbs.sh
+
+note over cs: ./init-script.sh
+activate cs
+note over cc: ./init-script.sh
+activate cc
+
+alt setup
+note over cc,cs: some carriers have been generated and put into the queue
+note over cc: carrier queue begins
+note over cc: carrier = carrierQueue.top();
+note over cc,cs: carrier has already some orders to deliver/lose
+end
+
+
+cc->cs: **redis request:** \n carrier.deliverOrder()
+cc->cc: wait 5 seconds for answer
+alt recieves answer
+par operation process
+note over cs:start counting time
+thread request is valid?
+cs->ecdb: is the order traveling with this carrier?
+activate ecdb
+ecdb-->cs: yes/no
+deactivate ecdb
+#cs->cs: if no return failure
+alt query returned no
+cs-->cc: **redis reply:** \n failure with status=BAD_REQ
+cc->cc: print error message containing status code and message
+end 
+cs->ecdb: is the order already delivered or lost?
+activate ecdb
+ecdb-->cs: yes/no
+deactivate ecdb
+alt query returned yes
+#cs->cs: if yes return failure
+cs-->cc: **redis reply:** \n failure with status=BAD_REQ
+cc->cc: print error message containing status code and message
+end
+thread operation
+cs->ecdb: deliver order
+activate ecdb
+ecdb-->cs: success/failure
+deactivate ecdb
+cs-->cc: **redis reply:** \n success/failure
+cc->cc: handle result of operation
+note over cs: stop counting time
+cs->logdb: record operation
+#note over cc: handle result of operation
+end
+else does not recieve answer
+note over cc: server has timed out
+cc->cc:print failure of operation
+note over cc: eliminate streams
+note over cc: go in sleep mode
+end

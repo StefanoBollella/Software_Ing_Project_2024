@@ -1,0 +1,41 @@
+---
+
+ #       IMAGE:     0      P_LOST     P_DELIVER          100 %
+#                   ^  lose  ^  deliver   ^  do-nothing   ^
+ #                  |--------|------------|---------------|
+
+# = chance of losing the order; must be 0 <= P_LOST < P_DELIVER.
+P_LOST: 10
+
+# = chance of delivering the order; must be P_LOST < P_DELIVER <= 100.
+P_DELIVER: 50
+
+#------------------
+
+ #        IMAGE:    0        P_END_WAIT    WAIT_MOD       100 %
+#                   ^  end-wait  ^    same    ^            ^
+ #                  |------------|------------>------------|
+
+# = percentage under which the carrier exits waiting status; must be 0 < P_END_WAIT <= 100.
+P_END_WAIT: 66
+
+# = modifier to grow Pmod. the bigger it is the slower Pmod grows; (over 10 already makes it very slow).
+WAIT_MOD: 2
+
+#------------------
+
+# = number of max orders a carrier can take;
+MAX_ORDERS: 10
+
+# = max carriers permitted in total;
+MAX_CARRIERS: 100 #was 1000
+
+
+
+# = ratio of generation in the while loop; (example: if = 5, every fifth iteration objects are generated. first iteration might too).
+Q_GEN_RATIO: 10
+
+# = number of intervals in which objects are generated.
+N_INTERVALS: 7
+
+...

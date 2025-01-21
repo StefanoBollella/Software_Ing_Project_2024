@@ -1,0 +1,75 @@
+@startuml
+!theme vibrant
+
+title Order
+
+participant Customer as c
+participant CustomerServer as cs
+database EcommerceDB as edb
+database LogsDB as ldb
+
+note left of c #aqua
+Assuming Customer did not reached it's order limit.
+end note
+
+activate c
+c -> cs : order(orderReqMsg)
+activate cs
+c -> c  : Blocks for 5 seconds to wait for a reply
+alt receives reply under 5 seconds
+    cs -> cs : orderHandler(orderReqMsg)
+
+    note over cs #yellow
+    starts measuring order processing time
+    end note
+    cs -> cs  : startNanos = get_nanos()
+    ...After parsing orderReqMsg...
+    cs -> cs  : orderQuery(db, customerID, ordID, products, msg)
+    cs -> edb : checkCustomerExists(customerID)
+    activate edb
+    alt customer exists
+        edb --> cs : true
+        cs -> edb : getProductsNotInStock(products)
+        edb --> cs : list of products not in stock
+        alt list of products not empty
+            cs -> cs : msg = some products are unavailable or don't have enough stocks
+            cs --> c : order failed, contains msg and BAD_REQ status
+            c -> c : prints that order request failed
+        else list of products is empty
+            cs -> edb : insertOrder(customerID)
+            edb --> cs : ordID = order id
+            cs -> edb : updateProductsQty(products)
+            cs -> cs : msg = order confirmed
+            cs --> c : order success, contains msg and REQ_OK status
+            c -> c : prints that order request succeeded
+            cs -> cs : nanosEnd = get_nanos()
+            note over cs #yellow
+            ends measuring order processing time
+            end note
+            cs -> ldb : log2db("order", customerID, usr_state, ordID, pid, nanosEnd - nanosStart)
+            activate ldb
+            deactivate ldb
+        end
+    else customer does not exists
+        edb --> cs : false
+        deactivate edb
+        cs -> cs : msg = customer not registered
+        cs --> c : order failed, contains msg and BAD_REQ status
+        deactivate cs
+        c -> c : prints that order request failed
+    end
+
+... after 5 seconds ...  
+else does not receive a reply in 5 seconds
+    c -> c : prints that order request failed
+    note left of c
+    Request status is SERVER_DOWN.
+    Frees the redis streams and 
+    waits for the server to recreate them.
+    end note
+    c -> c : prints that customer server might be down
+    c -> c : freeRedisStreams()
+end
+deactivate c
+@enduml
+
