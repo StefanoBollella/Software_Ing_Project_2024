@@ -1,4 +1,4 @@
-# Software_Ing_Project_2024
+# Software Engineering Project a.y. 2023/2024
 
 ![Logo](./backend_logo.png)
 
