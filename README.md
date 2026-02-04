@@ -6,9 +6,9 @@ Project for the software engineering class of the third year of "informatica" de
 The chosen project is a simulator of a backend of an e-commerce site.
 
 ## Developed by:
-- Jofeth Abello 2016241
-- Stefano Bollella 2025438
-- Matteo Boccongelli 1908956
+- Jofeth Abello 
+- Stefano Bollella 
+- Matteo Boccongelli
 
 ## Run
 
